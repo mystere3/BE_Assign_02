@@ -27,22 +27,28 @@ class Scrabble
       word.split("").each {|letter|
         @word_score += @letter_scores[letter]
         }
-      puts "#{word} has a value of #{@word_score}."
+      puts "\n#{word.capitalize} has a value of #{@word_score}.\n\n"
     else
-      puts "'#{word.capitalize}' doesn't exist in the dictionary."
+      puts "\n'#{word.capitalize}' doesn't exist in the dictionary.\n\n"
     end
   end
-  
 end
-puts "SCRABBLE SCORER!"
-puts "Loading dictionary (I think), this may take a few seconds...\n \n"
+
+
+puts "\n\n\n//////////   SCRABBLE SCORER!   \\\\\\\\\\\\\\\\\\\\ \n\n"
+puts "Loading dictionary (I think), this may take a few seconds...\n\n"
 game = Scrabble.new
 
-puts "Please enter word to be scored:"
-word = gets.chomp
-
-game.score(word)
-
+while true
+  puts "Please enter word to be scored (Leave blank and press ENTER to quit):"
+  word = gets.chomp
+  if word.length > 0
+    game.score(word)
+  else
+    puts "Thanks for using Myster3's Scrabble\u00AE Scorer!\n\n"
+    break
+  end
+end
 
 
 
