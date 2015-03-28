@@ -1,6 +1,6 @@
 class EscapeGame
-	attr_accessor :drawer_is_open, :glassbox_is_open, :keybox_is_open, :circuitbox_is_open, :gloves_are_on, :floor_is_wet
-	attr_accessor :gloves, :mop, :knife, :door, :desk, :drawer, :pen, :paper, :key, :glassbox, :circuitbox
+	attr_accessor :drawer_is_open, :glassbox_is_open, :keybox_is_open, :circuitbox_is_open, :gloves_are_on, :floor_is_wet, :horror_in_room
+	attr_accessor :gloves, :mop, :knife, :door, :desk, :drawer, :pen, :paper, :key, :glassbox, :circuitbox, :horror, :turns_remain
 	attr_reader :object_hash
 
 	def initialize
@@ -9,6 +9,8 @@ class EscapeGame
 		@keybox_is_open = false
 		@circuitbox_is_open = false
 		@floor_is_wet = true
+		@horror_in_room = false
+		@turns_remain = 10;
 
 		populate_objects
 		populate_obj_hash
@@ -33,6 +35,7 @@ class EscapeGame
 		@key = Key.new
 		@glassbox = Glassbox.new
 		@circuitbox = Circuitbox.new
+		@horror = Horror.new
 	end
 
 	def action(act, object, game)
@@ -49,7 +52,7 @@ class EscapeGame
 		object.downcase!
 
 		case object
-			when "gloves", "mop", "knife", "door", "desk", "drawer", "pen", "paper", "key", "glassbox", "circuitbox"
+			when "gloves", "mop", "knife", "door", "desk", "drawer", "pen", "paper", "key", "glassbox", "circuitbox", "horror"
 			when "rubber gloves" 
 				object = "gloves"
 			when "desk drawer" 
@@ -70,6 +73,8 @@ class EscapeGame
 					puts "I'm sorry, I don't recognize that box."
 					return
 				end
+			when "nameless horror"
+				object = "horror"
 			else
 				puts "I'm sorry, I don't recognize that object."
 				return
@@ -77,8 +82,7 @@ class EscapeGame
 
 		
 		@object_hash[object].send(act, game)
-		# action_on_object = @object_hash[object].method(act)
-		# action_on_object.call()
+		game.turns_remain -= 1
 
 
 	end
@@ -202,6 +206,17 @@ class Mop < EG_Object
 					game.floor_is_wet == false
 					puts "This fantastic state-of-the-art mop has left the floor completely dry."
 				end
+			elsif mop_what == "horror" || mop_what == "nameless horror"
+				if game.horror_in_room == true 
+					if game.horror.is_staggered == false
+						puts "You swing the heavy handled mop at the nameless horror. It staggers back a few steps mildly stunned."
+						game.turns_remain += 2
+					else
+						puts "The horror ignores additional attacks with the mop."
+					end
+					else
+						puts "The nameless horror isn't in the room with you."
+				end
 			else
 				puts "This fantastic mop has left the #{mop_what} perfectly dry. Although it was probably pretty dry to begin with."
 			end
@@ -221,7 +236,44 @@ class Mop < EG_Object
 end
 
 class Knife < EG_Object
-	
+	def get(game)
+		if @has_moved == true
+			puts "You already have the knife."
+		elsif game.glassbox_is_open == false
+			puts "You can't get to the gloves. The glass box is closed."
+		else
+			@is_equipped = true
+			game.gloves_are_on = true
+			puts "You put on the rubber gloves."
+		end
+	end
+
+	def take(game)
+		get(game)
+	end
+
+	def use(game)
+		puts "What would you like to use the knife on?"
+		input = gets.chomp
+		input.downcase!
+		case input
+		when "glass box", "glassbox"
+			
+		end
+	end
+
+	def wear(game)
+		get(game)
+	end
+
+	def equip(game)
+		get(game)
+	end
+
+	def inspect(game)
+		puts "The gloves are yellow and appear to made entirely of a reasonably thick rubber. 
+		They look like a well made, pricy, pair of dishwashing gloves."
+	end
 end
 
 class Door < EG_Object
@@ -254,6 +306,10 @@ end
 
 class Circuitbox < EG_Object
 	
+end
+
+class Horror < EG_Object
+	attr_accessor :is_staggered, :is_stabbed
 end
 
 
