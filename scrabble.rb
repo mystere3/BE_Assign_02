@@ -23,7 +23,9 @@ class Scrabble
   
   def score(word)
     if @dictionary.exists?(word)
+      word.upcase!
       word.split("").each {|letter|
+        
         @word_score += @letter_scores[letter]
         }
     else
@@ -32,14 +34,16 @@ class Scrabble
   end
   
 end
-
+puts "SCRABBLE SCORER!"
+puts "Loading dictionary (I think), this may take a few seconds...\n \n"
 game = Scrabble.new
-puts "give word"
+
+puts "Please enter word to be scored:"
 word = gets.chomp
 
 game.score(word)
 
-puts game.score
+puts "#{word} has a value of #{game.word_score}."
 
 
 

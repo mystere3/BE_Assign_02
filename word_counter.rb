@@ -1,5 +1,6 @@
 def para_to_array(para)
-  para.delete!("/.,!;:?()").downcase!
+  para.delete!("/.,!;:?()")
+  para.downcase!
   word_array = para.split(' ')
   return word_array
 end
