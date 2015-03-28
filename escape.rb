@@ -178,7 +178,46 @@ class Gloves < EG_Object
 end
 
 class Mop < EG_Object
-	
+	def get(game)
+		if @is_equipped == true
+			puts "You already have the mop."
+		else
+			@is_equipped = true
+			puts "You are now holding the mop."
+		end
+	end
+
+	def take(game)
+		get(game)
+	end
+
+	def use(game)
+		if is_equipped == true
+			puts "What would you like to use the mop on?"
+			mop_what = gets.chomp
+			if mop_what == "water" || mop_what == "puddle" || mop_what == "floor"
+				if game.floor_is_wet && !game.gloves_are_on
+					puts "When you touch the mop to the puddle you feel a considerable electic shock that blows you back away from the puddle and the door."
+				else
+					game.floor_is_wet == false
+					puts "This fantastic state-of-the-art mop has left the floor completely dry."
+				end
+			else
+				puts "This fantastic mop has left the #{mop_what} perfectly dry. Although it was probably pretty dry to begin with."
+			end
+		else
+			puts "You don't have the mop."
+		end
+
+	end
+
+	def equip(game)
+		get(game)
+	end
+
+	def inspect(game)
+		puts "This is a very impressive mop. It has a strong metal handle and what appears to be a very modern mop head. This mop is so good that if you place it in a damp basement you could throw out the humidifier."
+	end
 end
 
 class Knife < EG_Object
