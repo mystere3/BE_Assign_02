@@ -25,11 +25,11 @@ class Scrabble
     if @dictionary.exists?(word)
       word.upcase!
       word.split("").each {|letter|
-        
         @word_score += @letter_scores[letter]
         }
+      puts "#{word} has a value of #{@word_score}."
     else
-      puts "Word doesn't exist in the dictionary"
+      puts "'#{word.capitalize}' doesn't exist in the dictionary."
     end
   end
   
@@ -43,7 +43,7 @@ word = gets.chomp
 
 game.score(word)
 
-puts "#{word} has a value of #{game.word_score}."
+
 
 
 
