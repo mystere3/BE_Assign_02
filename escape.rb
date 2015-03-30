@@ -41,7 +41,7 @@ class EscapeGame
 	end
 
 	def action(act, object, game)
-
+		puts ""
 		act.downcase!
 
 		case act
@@ -59,11 +59,11 @@ class EscapeGame
 				object = "gloves"
 			when "desk drawer", "drawer"
 				object = "desk"
-			when "glass box" 
+			when "glass box", "glass"
 				object = "glassbox"
-			when "circuit box" 
+			when "circuit box", "circuit"
 				object = "circuitbox"
-			when "puzzle box", "puzzle", "key box"
+			when "puzzle box", "puzzle"
 				object = "puzzlebox"
 			when "box"
 				puts "Which box are you referring to?"
@@ -72,31 +72,23 @@ class EscapeGame
 				if box == "glass" || box == "glass box"
 					object = "glassbox"
 				elsif box == "circuit" || box == "circuit box"
-					object = "circuitbox"	
-				elsif box == "puzzle" || box == "puzzle box"
-					object == "puzzlebox"
+					object = "circuitbox"
+				elsif box == "puzzle" || box == "puzzle box" || box == "puzzlebox"
+					object = "puzzlebox"
 				else
 					puts "I'm sorry, I don't recognize that box."
 					return
 				end
 			when "nameless horror"
 				object = "horror"
-			when object.nil? == true
-				puts "Unless asked for clarification, always enter text in the form of: action object"
-				puts "Where action and object are separated by a space."
-				return
 			else
 				puts "I'm sorry, I don't recognize that object."
 				return
 		end
-		
-		puts action
-		puts object
 
-		if object.nil? == false
-			@object_hash[object].send(act, game)
-			game.turns_remain -= 1
-		end
+		
+		@object_hash[object].send(act, game)
+		game.turns_remain -= 1
 		
 		test_status
 	end
@@ -527,7 +519,8 @@ class Paper < EG_Object
 end
 
 class Puzzlebox < EG_Object
-	attr_accessor :is_open, :solution
+	attr_accessor :is_open
+	attr_reader :solution
 
 	def initialize
 		super
@@ -536,8 +529,13 @@ class Puzzlebox < EG_Object
 	end
 
 	def get(game)
-		@is_equipped = true
-		puts "You take the puzzle box."
+		if @is_equipped == false
+			@is_equipped = true
+			puts "You take the puzzle box."
+		else
+			puts "You already have the puzzle box."
+		end
+		
 	end
 
 	def take(game)
@@ -545,26 +543,97 @@ class Puzzlebox < EG_Object
 	end
 
 	def use(game)
-		puts "The puzzle box can't be opened but there is no lock. \nOn the top of the box is a picture of a key and five buttons. \nEach button has a letter printed on it as follows:"
-		puts "E  U  N  E  Q"
-		puts "Enter the order you press the buttons:"
-		entry = gets.chomp
-		entry.tr!(' ,.;:()[]{}"\'', '').upcase!
-		if entry.length < 5
-			puts "You enter '#{entry} but the box fails to open."
-		else
-			if entry == solution
-				@is_open = true
-				puts "You enter #{entry}. The box emits a click and then opens. Inside you see a key."
-			else
+		if @is_open == false
+			puts "The puzzle box can't be opened but there is no lock. \nOn the top of the box is a picture of a key and five buttons. \nEach button has a letter printed on it as follows:"
+			puts "E  U  N  E  Q"
+			puts "Enter the letters in the order you press them:"
+			entry = gets.chomp
+			entry.tr!(' ,.;:()[]{}"\'', '')
+			entry.upcase!
+			if entry.length < 5
 				puts "You enter '#{entry} but the box fails to open."
+			else
+				if entry == solution
+					@is_open = true
+					puts "You enter #{entry}. The box emits a click and then opens. Inside you see a key."
+				else
+					puts "You enter '#{entry} but the box fails to open."
+				end
 			end
+		else
+			puts "The puzzle box is already open."
 		end
+	end
+
+	def open(game)
+		use(game)
+	end
+
+	def equip(game)
+		get(game)
+	end
+
+	def inspect(game)
+		description = "This puzzle box has an image of a key and 5 buttons, each labelled with a letter, on the lid. The buttons, in order, are labelled: E U N E Q. "
+		if @is_open == true
+			
+			description << "Having solved the puzzle, the lid is now open. "
+			if game.key.is_equipped == true
+				description << "You have taken the key that was in the box. There is nothing in here now. "
+			else
+				description << "There is a key inside the box. "
+			end
+		else
+			description << "The box is locked shut."
+		end
+		puts description
+	end
+
+	def search(game)
+		inspect(game)
 	end
 end
 
 class Key < EG_Object
+	def get(game)
+		if @is_equipped == true
+			puts "You already have the key."
+		else
+			if game.puzzlebox.is_open == true
+				@is_equipped = true
+				puts "You take the key from inside the box."
+			else
+				puts "You don't see a key in the room."
+			end
+		end
+	end
+
+	def take(game)
+		get(game)
+	end
+
+	def use(game)
+		puts "What would you like to use the key on?"
+		input = gets.chomp.downcase!
+		if input == door
+			game.door.is_locked == false
+			puts "You unlock the door. "
+		else
+			puts "You can't use the key with that."
+		end
+	end
+
+	def open(game)
+		use(game)
+	end
+
+	def equip(game)
+		get(game)
+	end
 	
+	def inspect(game)
+		puts "It's a pretty standard key. Made of metal, round head, grooves along the length, teeth along the bottom."
+	end
 end
 
 class Glassbox < EG_Object
@@ -572,6 +641,10 @@ class Glassbox < EG_Object
 
 	def initialize
 		is_open = false
+	end
+
+	def use
+		
 	end
 end
 
