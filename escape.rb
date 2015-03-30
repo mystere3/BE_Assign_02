@@ -364,7 +364,7 @@ class Door < EG_Object
 		open(game)
 	end
 
-	def inspect
+	def inspect(game)
 		puts "This is an old style door made of solid wood that won't break easily. The door jamb also appears to be constructed of quality materials that will withstand considerable punishment. There is a keyhole below the doorhandle."
 	end
 end
@@ -613,13 +613,26 @@ class Key < EG_Object
 	end
 
 	def use(game)
-		puts "What would you like to use the key on?"
-		input = gets.chomp.downcase!
-		if input == door
-			game.door.is_locked == false
-			puts "You unlock the door. "
+		if @is_equipped == true
+			puts "What would you like to use the key on?"
+			input = gets.chomp
+			input.downcase!
+			if input == "door"
+				if game.door.is_locked == false
+					puts "The door is already unlocked."
+				else
+					if game.floor_is_wet == true && game.circuitbox.outlets_on == true
+						puts "When you step into the puddle to try the key in the door you recieve an electric shock and are knocked back away from the door."
+					else
+						game.door.is_locked = false
+						puts "The key slides in the lock easily. You unlock the door."
+					end
+				end	
+			else
+				puts "You can't use the key with that."
+			end
 		else
-			puts "You can't use the key with that."
+			puts "You don't have the key."
 		end
 	end
 
