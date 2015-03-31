@@ -218,19 +218,29 @@ class Mop < EG_Object
 					game.floor_is_wet == false
 					puts "This fantastic state-of-the-art mop has left the floor completely dry."
 				end
-			when "glassbox", "glass box", "box"
+			when "glassbox", "glass box", "box", "glass"
 				if mop_what == "box"
 					puts "Which box would you like to use the mop on?"
 					which_box = gets.chomp
 					if which_box == "glass" || which_box == "glass box" || which_box == "glassbox"
-						if game.glassbox.is_open == true
-							puts "The glass box is already open."
-							puts game.gloves.is_equipped ? "There is nothing else in the box." : "The rubber gloves are in the glass box."
-						else
-							game.glassbox.is_open = true
-							puts "You smash open the glass box with the heavy metal handle of the mop. The rubber gloves inside have some glass on them but are undamaged."
-						end
+						# This is intended to just skip the rest of the elsifs and continue the method
+					elsif which_box == "circuit" || which_box == "circuitbox" || which_box == "circuit box"
+						puts "You stike the circuit box with the mop but nothing happens."
+						return
+					elsif which_box == "puzzle" || which_box == "puzzlebox" || which_box == "puzzle box"
+						puts "You strike the puzzle box with the mop but nothing happens."
+						return
+					else
+						puts "You don't see that kind of box in the room."
+						return
 					end
+				end
+				if game.glassbox.is_open == true
+					puts "The glass box is already open so striking it with the mop would be pointless. It is also perfectly dry."
+					puts game.gloves.is_equipped ? "There is nothing else in the box." : "The rubber gloves are in the glass box."
+				else
+					game.glassbox.is_open = true
+					puts "You smash open the glass box with the heavy metal handle of the mop. The rubber gloves inside have some glass on them but are undamaged."
 				end
 			when "horror", "nameless horror"
 				if game.horror.in_room == true 
@@ -341,10 +351,11 @@ class Knife < EG_Object
 end
 
 class Door < EG_Object
-	attr_accessor :is_locked
+	attr_accessor :is_locked, :is_open
 
 	def initialize
 		@is_locked = true
+		@is_open = false
 	end
 
 	def open(game)
@@ -355,6 +366,7 @@ class Door < EG_Object
 				puts "You try the handle but the door is locked."
 			end
 		else
+			@is_open = true
 			puts "The unlocked doorhandle turns and you open the door."
 			game.end_game
 		end
@@ -366,6 +378,13 @@ class Door < EG_Object
 
 	def inspect(game)
 		puts "This is an old style door made of solid wood that won't break easily. The door jamb also appears to be constructed of quality materials that will withstand considerable punishment. There is a keyhole below the doorhandle."
+		if @is_open == true
+			puts "The door is open."
+		elsif game.floor_is_wet && game.circuitbox.outlets_on == true
+			puts "The door is closed but you have not been able to test to see if it is locked."
+		else
+			puts "The door is closed but unlocked."
+		end
 	end
 end
 
@@ -617,7 +636,8 @@ class Key < EG_Object
 			puts "What would you like to use the key on?"
 			input = gets.chomp
 			input.downcase!
-			if input == "door"
+			case input
+			when "door"
 				if game.door.is_locked == false
 					puts "The door is already unlocked."
 				else
@@ -627,7 +647,25 @@ class Key < EG_Object
 						game.door.is_locked = false
 						puts "The key slides in the lock easily. You unlock the door."
 					end
-				end	
+				end
+			when "glass", "glassbox", "glass box", "box"
+				if input == "box"
+					puts "Which box would you like to use the key on?"
+					which_box = gets.chomp
+					if which_box == "glass" || which_box == "glass box" || which_box == "glassbox"
+						# This is intended to just skip the rest of the elsifs and continue the method
+					elsif which_box == "circuit" || which_box == "circuitbox" || which_box == "circuit box"
+						puts "The circuit box doesn't have a lock to use a key on."
+						return
+					elsif which_box == "puzzle" || which_box == "puzzlebox" || which_box == "puzzle box"
+						puts "The puzzle box doesn't have a keyed lock."
+						return
+					else
+						puts "You don't see that kind of box in the room."
+						return
+					end
+				end
+				puts "The key doesn't fit in the glass box's lock."
 			else
 				puts "You can't use the key with that."
 			end
@@ -653,11 +691,50 @@ class Glassbox < EG_Object
 	attr_accessor :is_open
 
 	def initialize
-		is_open = false
+		@is_open = false
 	end
 
-	def use
-		
+	def get(game)
+		puts "The glass box is embedded in he wall and can't be removed."
+	end
+
+	def take(game)
+		get(game)
+	end
+
+	def use(game)
+		if @is_open == false
+			puts "The glass box is locked and securely attached to the wall."
+		else
+			puts "The glass box has been smashed open allowing access to its contents."
+			if game.gloves.is_equipped == true
+				puts "You have taken the rubber gloves that were in here."
+			else
+				puts "There is a pair of rubber gloves inside."
+			end
+		end
+	end
+
+	def open(game)
+		use(game)
+	end
+
+	def inspect(game)
+		puts "This is a 'glass box' embedded in the wall much like one you would see in many buildings containing emergency fire equipment. It has a metal door with a keyable lock. "
+		if @is_open == false
+			puts "A large portion of the door is made of glass, revealing the glass box's contents."
+		else
+			puts "The glass has been broken out of the door allowing access to the box. "
+		end
+		if game.gloves.is_equipped == true
+			puts "You have taken the rubber gloves that were in here. There is nothing else in the box."
+		else
+			puts "There is a pair of yellow rubber gloves inside the box."
+		end
+	end
+
+	def search(game)
+		inspect(game)
 	end
 end
 
