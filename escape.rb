@@ -1,21 +1,26 @@
 class EscapeGame
 	attr_accessor :floor_is_wet
-	attr_accessor :gloves, :mop, :knife, :door, :desk, :pen, :paper, :puzzlebox, :key, :glassbox, :circuitbox, :horror, :turns_remain
+	attr_accessor :gloves, :mop, :knife, :door, :desk, :pen, :paper, :puzzlebox, :key, :glassbox, :circuitbox, :outlet, :horror, :turns_remain, :game_over
+
 	attr_reader :object_hash
 
 	def initialize
 		
 		@floor_is_wet = true
-		@turns_remain = 10;
+		@turns_remain = 10
+		@game_over = false
 
 		populate_objects
 		populate_obj_hash
+		open_story
+		print_help
+		run_game
 	end
 
 	def populate_obj_hash
 		@object_hash = {
 			"gloves" => @gloves, "mop" => @mop, "knife" => @knife, "door" => @door, "desk" => @desk, "pen" => @pen, 
-			"paper" => @paper, "key" => @key, "glassbox" => @glassbox, "circuitbox" => @circuitbox, "puzzlebox" => @puzzlebox
+			"paper" => @paper, "key" => @key, "glassbox" => @glassbox, "circuitbox" => @circuitbox, "outlet" => @outlet, "puzzlebox" => @puzzlebox, "horror" => @horror
 		}
 	end
 
@@ -31,13 +36,53 @@ class EscapeGame
 		@key = Key.new
 		@glassbox = Glassbox.new
 		@circuitbox = Circuitbox.new
+		@outlet = Outlet.new
 		@horror = Horror.new
 	end
 
 	def test_status
 		# puts @paper.is_equipped ? "paper equipped" : "paper not equipped"
 		# puts @puzzlebox.is_equipped ? "puzzlebox equipped" : "puzzlebox not equipped"
+		# puts @floor_is_wet ? "floor is wet" : "floor is dry"
+		# puts @circuitbox.outlets_on ? "outlets on" : "outlets off"
 		puts turns_remain.to_s
+	end
+
+	def run_game
+
+		while true # This will change to @turns_remain > 0 && @game_over == false
+			if game_over == true || turns_remain <= 0
+				game_over = true
+				break
+			end
+			puts game_over ? "game_over = true" : "game_over = false"
+			get_input = gets.chomp
+			input_array = get_input.split(" ")
+			print_help if get_input.downcase == "help"
+			next if get_input.downcase == "help"
+			if input_array.length >= 2
+				act = input_array[0]
+				object = input_array[1]
+				action(act, object, self)
+			else
+				puts "Please enter commands in the form of: action object"
+				puts "Where ACTION and OBJECT are separated by a space."
+			end
+			
+		end
+		end_game
+	end
+		
+	def print_help
+		puts "help."
+	end
+
+	def open_story
+		puts "story opening"
+	end
+
+	def describe_room
+		puts "describe room"
 	end
 
 	def action(act, object, game)
@@ -54,7 +99,7 @@ class EscapeGame
 		object.downcase!
 
 		case object
-			when "gloves", "mop", "knife", "door", "desk", "pen", "paper", "key", "glassbox", "circuitbox", "puzzlebox", "horror"
+			when "gloves", "mop", "knife", "door", "desk", "pen", "paper", "key", "glassbox", "circuitbox", "puzzlebox", "horror", "outlet"
 			when "rubber gloves" 
 				object = "gloves"
 			when "desk drawer", "drawer"
@@ -81,6 +126,13 @@ class EscapeGame
 				end
 			when "nameless horror"
 				object = "horror"
+			when "game", "room"
+				if act == "inspect" || act == "search"
+					describe_room
+					return # I don't want this to cost an action so it skips the rest of the method
+				else
+					puts "You can't do that with the room. "
+				end
 			else
 				puts "I'm sorry, I don't recognize that object."
 				return
@@ -88,14 +140,27 @@ class EscapeGame
 
 		
 		@object_hash[object].send(act, game)
-		game.turns_remain -= 1
+		@turns_remain -= 1
 		
 		test_status
 	end
 
 	def end_game
-		puts "Exit room..."
+
+		puts "End game..."
+
+		if @circuitbox.lights_on == false
+			puts "Lights out ending."
+		elsif @door.is_open == true
+			puts "Door open ending."
+		else
+			puts "Out of turns ending."
+		end
+
 		# lights out ending
+		# door open ending
+		# no more turns ending
+
 	end
 end
 
@@ -216,7 +281,7 @@ class Mop < EG_Object
 				if game.floor_is_wet && !game.gloves.is_equipped
 					puts "When you touch the mop to the puddle you feel a considerable electic shock that blows you back away from the puddle and the door."
 				else
-					game.floor_is_wet == false
+					game.floor_is_wet = false
 					puts "This fantastic state-of-the-art mop has left the floor completely dry."
 				end
 			when "glassbox", "glass box", "box", "glass"
@@ -301,7 +366,7 @@ class Knife < EG_Object
 			when "circuit box", "circuitbox", "circuit"
 				if game.circuitbox.is_open == false
 					game.circuitbox.is_open = true
-					puts "You stick the knife behind the edge of the door and manage to pry it open."
+					puts "You stick the knife behind the edge of the door and manage to pry it open. Inside you see two circuit breakers. One is labelled 'Lights', the other 'Outlets'. They are both in the 'ON' position."
 				else
 					puts "You jab the knife in the open circuit box. You manage to scratch it up a bit."
 				end
@@ -312,7 +377,7 @@ class Knife < EG_Object
 				if which_box == "circuitbox" || which_box == "circuit box" || which_box == "circuit"
 					if game.circuitbox.is_open == false
 						game.circuitbox.is_open = true
-						puts "You stick the knife behind the edge of the door and manage to pry it open."
+						puts "You stick the knife behind the edge of the door and manage to pry it open. Inside you see two circuit breakers. One is labelled 'Lights', the other 'Outlets'. They are both in the 'ON' position."
 					else
 						puts "You jab the knife in the open circuit box. You manage to scratch it up a bit."
 					end
@@ -360,8 +425,8 @@ class Door < EG_Object
 	end
 
 	def open(game)
-		if @is_locked
-			if game.floor_is_wet && game.circuitbox.outlets_on
+		if @is_locked == true
+			if game.floor_is_wet == true && game.circuitbox.outlets_on == true
 				puts "When your bare feet touch the water on the floor as you go to the door you are jolted by an electric shock and thrown back away from the door."
 			else
 				puts "You try the handle but the door is locked."
@@ -369,7 +434,7 @@ class Door < EG_Object
 		else
 			@is_open = true
 			puts "The unlocked doorhandle turns and you open the door."
-			game.end_game
+			game.game_over = true
 		end
 	end
 
@@ -751,6 +816,15 @@ class Circuitbox < EG_Object
 	def use(game)
 		if @is_open == true
 			puts "There are two circuit breakers. One is labelled 'Lights', the other is labelled 'Outlets'. "
+			if lights_on == true && outlets_on == true
+				puts "Both breakers are set to the 'ON' position. "
+			elsif lights_on == false && outlets_on == false
+				puts "Both breakers are set to the 'OFF' position. "
+			elsif lights_on == true && outlets_on == false
+				puts "The lights breaker is set to on, the outlets breaker is set to off."
+			else
+				puts "The lights breaker is set to off, the outlets breaker is set to on."	
+			end
 			puts "Do you trip one of the breakers?"
 			input = gets.chomp
 			input.downcase!
@@ -766,11 +840,11 @@ class Circuitbox < EG_Object
 					else
 						puts "You can't see and you've lost your bearings. "
 					end
-					game.end_game
+					game.game_over = true
 				elsif which_circuit == "outlets"
 					if @outlets_on == true
 						@outlets_on = false
-						puts "You flip the breaker that claims to control the outlets. They should now be off. "
+						puts "You flip the breaker that claims to control the outlets. It is now in the 'OFF' position. "
 					else
 						@outlets_on = true
 						puts "You flip the breaker controlling the outlets again. The power feeding the outlets should be on. "
@@ -795,6 +869,45 @@ class Circuitbox < EG_Object
 			puts "The circuit box door is already open."
 		end
 	end
+
+	def inspect(game)
+		description = "The circuit box is in the wall near the door. You don't have to step in the puddle to get to it. "
+		if @is_open == false
+			description << "The door to the circuit box is closed. On the right side of the door is a small lip intended to assist in opening the box. There are a lot of scratches in the wall immediately next to the lip. "
+		else
+			description << "The door to the circuit box is open, inside you see two circuit breakers. One is marked 'Lights', the other 'Outlets'. "
+			if lights_on == true
+				description << "The breaker for the lights is in the on position. "
+			else
+				description << "The breaker for the lights is in the off position. "
+			end
+			if outlets_on == true
+				description << "The outlets breaker is #{"also " if lights_on == true}set to on. "
+			else
+				description << "The outlets breaker is #{"also " if lights_on == false}set to off. "
+			end
+		end
+		puts description
+	end
+end
+
+class Outlet < EG_Object
+	def inspect(game)
+		description = "The outlet is to the right of the door you want to exit through. The outlet no longer has plugs or a faceplate. All that's left are exposed wires which reach down far enough to touch the floor. "
+		if game.floor_is_wet == true
+			description << "The ends of the wires are sitting in the pool of water on the floor. "
+		end
+		if game.circuitbox.outlets_on == true
+			description << "The wires appear to be live, which is evident because the wires spark periodically. "
+		else
+			description << "The wires are no longer sparking every few seconds, the power feeding them seems to have been successfully turned off. "
+		end
+		puts description
+	end
+
+	def search(game)
+		inspect(game)
+	end
 end
 
 class Horror < EG_Object
@@ -804,8 +917,6 @@ class Horror < EG_Object
 		@in_room = false
 		@is_staggered = false
 		@is_stabbed = false
-
-		
 	end
 end
 
@@ -813,19 +924,8 @@ end
 
 game = EscapeGame.new
 
-while true
-	get_input = gets.chomp
-	input_array = get_input.split(" ")
-	if input_array.length >= 2
-		act = input_array[0]
-		object = input_array[1]
-		game.action(act, object, game)
-	else
-		puts "Please enter commands in the form of: action object"
-		puts "Where ACTION and OBJECT are separated by a space."
-	end
-	
-end
+
+
 
 
 

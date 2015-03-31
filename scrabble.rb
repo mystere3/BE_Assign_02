@@ -1,4 +1,4 @@
-require 'rubygems'
+# require 'rubygems'
 require 'ruby-dictionary'
 
 class Scrabble
@@ -22,6 +22,7 @@ class Scrabble
   end
   
   def score(word)
+    @word_score = 0
     if @dictionary.exists?(word)
       word.upcase!
       word.split("").each {|letter|
