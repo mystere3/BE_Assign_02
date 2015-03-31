@@ -95,6 +95,7 @@ class EscapeGame
 
 	def end_game
 		puts "Exit room..."
+		# lights out ending
 	end
 end
 
@@ -297,7 +298,7 @@ class Knife < EG_Object
 			input = gets.chomp
 			input.downcase!
 			case input
-			when "circuit box", "circuitbox"
+			when "circuit box", "circuitbox", "circuit"
 				if game.circuitbox.is_open == false
 					game.circuitbox.is_open = true
 					puts "You stick the knife behind the edge of the door and manage to pry it open."
@@ -745,7 +746,54 @@ class Circuitbox < EG_Object
 		@is_open = false
 		@lights_on = true
 		@outlets_on = true
-		
+	end
+
+	def use(game)
+		if @is_open == true
+			puts "There are two circuit breakers. One is labelled 'Lights', the other is labelled 'Outlets'. "
+			puts "Do you trip one of the breakers?"
+			input = gets.chomp
+			input.downcase!
+			if input[0] == "y"
+				puts "Break the lights or outlets?"
+				which_circuit = gets.chomp
+				which_circuit.downcase!
+				if which_circuit == "lights"
+					@lights_on = false
+					puts "As you trip the breaker for the lights the box emits a considerable spark which blinds you as the lights go out. You take an involuntary step back. "
+					if outlets_on == true
+						puts "You step into the puddle which electifies you again. You can't see and you've lost your bearings."
+					else
+						puts "You can't see and you've lost your bearings. "
+					end
+					game.end_game
+				elsif which_circuit == "outlets"
+					if @outlets_on == true
+						@outlets_on = false
+						puts "You flip the breaker that claims to control the outlets. They should now be off. "
+					else
+						@outlets_on = true
+						puts "You flip the breaker controlling the outlets again. The power feeding the outlets should be on. "
+					end
+				else
+					puts "You don't see a breaker with that label in the circuit box."
+				end
+			elsif input[0] == "n"
+				puts "You leave the breakers alone."
+			else
+				puts "I'm going to take that as a no. You leave the breakers alone."
+			end
+		else
+			puts "The circuit box door is closed. "
+		end
+	end
+
+	def open(game)
+		if @is_open == false
+			puts "There is a small lip on the circuit box door that's used to open it but the door is very tight and your fingers can't get enough purchase to open it. You see many scratches worn into area next to the lip. "
+		else
+			puts "The circuit box door is already open."
+		end
 	end
 end
 
