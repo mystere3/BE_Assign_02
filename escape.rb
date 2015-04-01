@@ -46,17 +46,15 @@ class EscapeGame
 		# puts @puzzlebox.is_equipped ? "puzzlebox equipped" : "puzzlebox not equipped"
 		# puts @floor_is_wet ? "floor is wet" : "floor is dry"
 		# puts @circuitbox.outlets_on ? "outlets on" : "outlets off"
-		puts turns_remain.to_s
+		# puts turns_remain.to_s
 	end
 
 	def run_game
 
 		while true # This will change to @turns_remain > 0 && @game_over == false
-			if game_over == true || turns_remain <= 0
-				game_over = true
+			if game_over == true
 				break
 			end
-			puts game_over ? "game_over = true" : "game_over = false"
 			get_input = gets.chomp
 			input_array = get_input.split(" ")
 			print_help if get_input.downcase == "help"
@@ -65,7 +63,6 @@ class EscapeGame
 				act = input_array[0]
 				object = input_array[1]
 				action(act, object, self)
-				@horror.move(self)
 			else
 				puts "Please enter commands in the form of: action object"
 				puts "Where ACTION and OBJECT are separated by a space."
@@ -141,16 +138,8 @@ class EscapeGame
 		end
 
 		
-		@object_hash[object].send(act, game)
-		if @horror.in_room == false
-			@turns_remain -= 1
-		else
-
-		end
-
-
-
-		test_status
+		@object_hash[object].send(act, self)
+		@horror.move(self)
 	end
 
 	def end_game
@@ -161,13 +150,25 @@ class EscapeGame
 			puts "Lights out ending."
 		elsif @door.is_open == true
 			puts "Door open ending."
+		elsif @horror.is_stabbed == false && @horror.is_staggered == false
+			puts "Out of turns ending. Horror undamaged."
+		elsif @horror.is_stabbed == true && @horror.is_staggered == true
+			puts "Horror stabbed and staggered ending."
+		elsif @horror.is_stabbed == true
+			puts "Stabbed horror ending."
+		elsif @horror.is_staggered == true
+			puts "Staggered horror ending."
 		else
-			puts "Out of turns ending."
+			puts "Uncaught ending."
 		end
 
 		# lights out ending
 		# door open ending
-		# no more turns ending
+		# no more turns endings:
+			# no stab or stagger
+			# stabbed
+			# staggered
+			# stabbed and staggered
 
 	end
 end
@@ -286,8 +287,12 @@ class Mop < EG_Object
 			mop_what = gets.chomp
 			case mop_what
 			when "water", "puddle", "floor"
-				if game.floor_is_wet && !game.gloves.is_equipped
-					puts "When you touch the mop to the puddle you feel a considerable electic shock that blows you back away from the puddle and the door."
+				if game.floor_is_wet == true && game.circuitbox.outlets_on == true
+					if game.gloves.is_equipped == true
+						puts "Although the metal handled mop recieves an electric charge when it sops up the electrified water, the rubber gloves have insulated you and you are unaffected. This miraculous mop has left the floor perfectly dry."
+					else
+						puts "When you touch the mop to the puddle you feel a considerable electic shock that blows you back away from the puddle and the door."
+					end
 				else
 					game.floor_is_wet = false
 					puts "This fantastic state-of-the-art mop has left the floor completely dry."
@@ -319,8 +324,9 @@ class Mop < EG_Object
 			when "horror", "nameless horror"
 				if game.horror.in_room == true 
 					if game.horror.is_staggered == false
+						game.horror.is_staggered = true
 						puts "You swing the heavy handled mop at the nameless horror. It staggers back a few steps mildly stunned."
-						game.end_count = 2
+						game.end_count = 3
 					else
 						puts "The horror ignores additional attacks with the mop."
 					end
@@ -395,8 +401,9 @@ class Knife < EG_Object
 			when "horror", "nameless horror"
 				if game.horror.in_room == true 
 					if game.horror.is_stabbed == false
+						game.horror.is_stabbed = true
 						puts "You stab the nameless horror and it jumps back away from you granting you a quick moment of safety."
-						game.end_count = 2
+						game.end_count = 3
 					else
 						puts "The horror is ready for your knife attack and parries it with ease."
 					end
@@ -929,9 +936,84 @@ class Horror < EG_Object
 
 	def move(game)
 		if @in_room == false
+			game.turns_remain -= 1
 			case game.turns_remain
-			when condition
-				
+			when 10
+				puts "10"
+			when 9
+				puts "9"
+			when 8
+				puts "8"
+			when 7
+				puts "7"
+			when 6
+				puts "6"
+			when 5
+				puts "5"
+			when 4
+				puts "4"
+			when 3
+				puts "3"
+			when 2
+				puts "2"
+			when 1
+				puts "1"
+			when 0
+				puts "0"
+				@in_room = true
+			else
+				puts "below 0"
+			end
+		else
+			if @is_stabbed == false && @is_staggered == false
+				game.turns_remain = -1
+				game.game_over = true
+			elsif @is_stabbed == true && @is_staggered == false
+				case game.end_count
+				when 3
+					game.end_count -= 1
+					puts "stabbed - 2"
+				when 2
+					game.end_count -= 1
+					puts "stabbed - 1"
+				when 1
+					game.end_count -= 1
+					puts "stabbed - 0"
+					game.game_over = true
+				else
+					puts "stabbed - out of scope."
+				end
+			elsif @is_stabbed == false && @is_staggered == true
+				case game.end_count
+				when 3
+					game.end_count -= 1
+					puts "staggered - 2"
+				when 2
+					game.end_count -= 1
+					puts "staggered - 1"
+				when 1
+					game.end_count -= 1
+					puts "staggered - 0"
+					game.game_over = true
+				else
+					puts "staggered - out of scope."
+				end
+			else	
+				case game.end_count
+				when 3
+					game.end_count -= 1
+					puts "stabbed and staggered - 2"
+				when 2
+					game.end_count -= 1
+					puts "stabbed and staggered - 1"
+				when 1
+					game.end_count -= 1
+					puts "stabbed and staggered - 0"
+					game.game_over = true
+				else
+					puts "stabbed and staggered -  out of scope."
+				end
+			end
 		end
 	end
 end
