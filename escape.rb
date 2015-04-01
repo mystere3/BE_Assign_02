@@ -77,11 +77,18 @@ class EscapeGame
 	end
 
 	def open_story
-		puts "story opening"
+		puts "\n ******************  ESCAPE! ******************** \n\n"
+		puts "You are fleeing. Barefoot for some reason. You are pursued down this hall by a nameless horror. The nameless horror is imminently indescribable, and it is utterly terrifying. \n\n"
+		puts "As you bolt down the hallway you try a few locked doors to the left and right, until you notice a door at the far end of the hall is open. Trying doors takes time, and the horror is very close behind you. \n\n"
+		puts "When you reach the open door, you look back down the hall and lock eyes with the pursuing horror. As you step in the room and slam the door, the nameless horror unleashes a terrifying scream. \n\n"
+		puts "You look at the door, which is made of heavy solid wood and has quite old handles and hardware, when you notice the lock below the handle you turn it immediately, locking the horror out. \n\n"
+		puts "You can still hear it coming, fast. You turn around to face the room and survey your new surroundings... \n\n"
+
+		describe_room
 	end
 
 	def describe_room
-		puts "describe room"
+		puts "There are no windows in this room. "
 	end
 
 	def action(act, object, game)
@@ -646,7 +653,7 @@ class Puzzlebox < EG_Object
 	def use(game)
 		if @is_open == false
 			puts "The puzzle box can't be opened but there is no lock. \nOn the top of the box is a picture of a key and five buttons. \nEach button has a letter printed on it as follows:"
-			puts "E  U  N  E  Q"
+			puts "E  U  N  Q"
 			puts "Enter the letters in the order you press them:"
 			entry = gets.chomp
 			entry.tr!(' ,.;:()[]{}"\'', '')
