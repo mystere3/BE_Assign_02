@@ -7,7 +7,7 @@ class EscapeGame
 	def initialize
 		
 		@floor_is_wet = true
-		@turns_remain = 10
+		@turns_remain = 8
 		@game_over = false
 		@end_count = 0
 
@@ -289,6 +289,7 @@ class Mop < EG_Object
 			when "water", "puddle", "floor"
 				if game.floor_is_wet == true && game.circuitbox.outlets_on == true
 					if game.gloves.is_equipped == true
+						game.floor_is_wet = false
 						puts "Although the metal handled mop recieves an electric charge when it sops up the electrified water, the rubber gloves have insulated you and you are unaffected. This miraculous mop has left the floor perfectly dry."
 					else
 						puts "When you touch the mop to the puddle you feel a considerable electic shock that blows you back away from the puddle and the door."
@@ -938,10 +939,10 @@ class Horror < EG_Object
 		if @in_room == false
 			game.turns_remain -= 1
 			case game.turns_remain
-			when 10
-				puts "10"
-			when 9
-				puts "9"
+			# when 10
+			# 	puts "10"
+			# when 9
+			# 	puts "9"
 			when 8
 				puts "8"
 			when 7
