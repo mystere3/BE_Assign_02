@@ -1,6 +1,6 @@
 class EscapeGame
 	attr_accessor :floor_is_wet
-	attr_accessor :gloves, :mop, :knife, :door, :desk, :pen, :paper, :puzzlebox, :key, :glassbox, :circuitbox, :outlet, :horror, :turns_remain, :game_over
+	attr_accessor :gloves, :mop, :knife, :door, :desk, :pen, :paper, :puzzlebox, :key, :glassbox, :circuitbox, :outlet, :horror, :turns_remain, :end_count, :game_over
 
 	attr_reader :object_hash
 
@@ -9,6 +9,7 @@ class EscapeGame
 		@floor_is_wet = true
 		@turns_remain = 10
 		@game_over = false
+		@end_count = 0
 
 		populate_objects
 		populate_obj_hash
@@ -64,6 +65,7 @@ class EscapeGame
 				act = input_array[0]
 				object = input_array[1]
 				action(act, object, self)
+				@horror.move(self)
 			else
 				puts "Please enter commands in the form of: action object"
 				puts "Where ACTION and OBJECT are separated by a space."
@@ -140,8 +142,14 @@ class EscapeGame
 
 		
 		@object_hash[object].send(act, game)
-		@turns_remain -= 1
-		
+		if @horror.in_room == false
+			@turns_remain -= 1
+		else
+
+		end
+
+
+
 		test_status
 	end
 
@@ -312,7 +320,7 @@ class Mop < EG_Object
 				if game.horror.in_room == true 
 					if game.horror.is_staggered == false
 						puts "You swing the heavy handled mop at the nameless horror. It staggers back a few steps mildly stunned."
-						game.turns_remain += 2
+						game.end_count = 2
 					else
 						puts "The horror ignores additional attacks with the mop."
 					end
@@ -388,7 +396,7 @@ class Knife < EG_Object
 				if game.horror.in_room == true 
 					if game.horror.is_stabbed == false
 						puts "You stab the nameless horror and it jumps back away from you granting you a quick moment of safety."
-						game.turns_remain += 2
+						game.end_count = 2
 					else
 						puts "The horror is ready for your knife attack and parries it with ease."
 					end
@@ -917,6 +925,14 @@ class Horror < EG_Object
 		@in_room = false
 		@is_staggered = false
 		@is_stabbed = false
+	end
+
+	def move(game)
+		if @in_room == false
+			case game.turns_remain
+			when condition
+				
+		end
 	end
 end
 
