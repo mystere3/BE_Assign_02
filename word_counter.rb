@@ -33,4 +33,4 @@ paragraph = gets.chomp
 max_word = get_max_word(paragraph)
 
 
-puts "The most frequent word was '#{max_word[0]}' which occured #{max_word[1]} time#{max_word[1] > 1 ? 's' : ''}."
+puts "The most frequent word was '#{max_word[0]}' which occurred #{max_word[1]} time#{max_word[1] > 1 ? 's' : ''}."
